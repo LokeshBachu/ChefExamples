@@ -1,0 +1,366 @@
+How to check puppet version?
+
+puppet --version
+
+How to create resource ?
+
+Best examples for it user and file creation.
+
+how to create an user?
+
+Syntax to create any user?
+
+Resource declarations are formatted as follows:
+
+resource_type { 'resource_name'
+  attribute => value
+  ...
+}
+
+Ex:
+
+user { 'lokesh':
+  ensure     => present,
+  uid        => '1000',
+  gid        => '1000',
+  shell      => '/bin/bash',
+  home       => '/home/mitchell'
+}
+
+
+puppet resource user 
+
+It will list all the users list inside the box or node.
+
+
+Resource can be created in 2 ways ?
+
+Using puppet command and using puppet script
+
+Using Puppet command:
+
+puppet resource user dave ensure=present shell="/bin/zsh" home="/home/dave"
+
+to check:puppet resource user
+
+Using puppet script.
+
+
+create some users.pp file 
+
+mkdir puppetexample and cd into it.
+
+vi users.pp and pste the above code and 
+
+puppet apply users.pp
+
+puppet resource user (check by using it).
+
+Example 2:Will create a file by using it.
+
+puppet apply -e "file{'/tmp/pup':
+                               ensure => 'directory'}
+                             file{ '/tmp/pup/et':
+                               ensure => 'present',
+                               content => 'look at me',
+                               require => File['/tmp/pup']}
+                           "
+				
+Using it we can create a file or create pp script named file.pp and paste the above code and apply it.
+
+go to temp puppet open et file
+
+
+Example 2:
+
+vi file.pp
+
+file {'/tmp/test1':
+ensure => present,
+content => "Hi.",
+}
+file {'/tmp/test2':
+ensure => directory,
+mode => 0644,
+}
+file {'/tmp/test3':
+ensure => link,
+target => '/tmp/test1',
+}
+
+:wq
+
+puppet apply file.pp
+
+ls -l /tmp
+
+test1 is file and test2 is folder so it will be in blue color.
+
+
+
+
+vi notify.pp
+
+notify {'other title':
+message =>"I 'm notifying you.",
+}
+
+puppet apply notify.pp
+
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.02 seconds
+Notice: I 'm notifying you.
+Notice: /Stage[main]/Main/Notify[other title]/message: defined 'message' as 'I 'm notifying you.'
+Notice: Finished catalog run in 0.04 seconds
+
+
+it is output.
+
+open it and add some more line :
+
+notify {'other title':
+message =>"I 'm notifying you.
+wg      fgggvsfsbd
+bfbsfbfbn
+bn f f
+test",
+}
+
+
+puppet apply notify.pp
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.02 seconds
+Notice: I 'm notifying you.
+wg      fgggvsfsbd
+bfbsfbfbn
+bn f f
+test
+Notice: /Stage[main]/Main/Notify[other title]/message: defined 'message' as 'I 'm notifying you.
+wg      fgggvsfsbd
+bfbsfbfbn
+bn f f
+test'
+Notice: Finished catalog run in 0.09 seconds
+
+
+above is the output.
+
+ vi exec.pp
+ 
+ exec { 'apt-update':
+command => 'apt-get update', path => "/usr/bin"}
+
+root@vagrant-ubuntu-trusty-64:~# puppet apply exec.pp
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.03 seconds
+
+Notice: /Stage[main]/Main/Exec[apt-update]/returns: executed successfully
+Notice: Finished catalog run in 18.63 seconds
+
+if it is centos7 means it wont work so:
+yum-update
+yum-y
+
+
+ vi motd.pp
+root@vagrant-ubuntu-trusty-64:~# puppet apply motd.pp
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.05 seconds
+Notice: /Stage[main]/Main/File[/tmp/motd]/ensure: created
+Notice: Finished catalog run in 0.07 seconds
+root@vagrant-ubuntu-trusty-64:~# cat motd.pp
+file {'/tmp/motd':
+ensure => present,
+content => "This is the message of the Qedge"
+
+
+Q:how to use vraiables in puppet code?
+
+ vi motd.pp
+root@vagrant-ubuntu-trusty-64:~# puppet apply motd.pp
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.06 seconds
+Notice: /Stage[main]/Main/File[/tmp/motd]/content: content changed '{md5}528fdfe9922f22fd922bfab5b2867de0' to '{md5}938f8453c441ee3a71fb86ea3f6ca1e0'
+Notice: Finished catalog run in 0.05 seconds
+root@vagrant-ubuntu-trusty-64:~# more /tmp/motd
+The text that i want to display
+root@vagrant-ubuntu-trusty-64:~# cat motd.pp
+$x ="The text that i want to display"
+file {'/tmp/motd':
+ensure => present,
+#content => "This is the message of the Qedge"
+content =>$x
+}
+
+root@vagrant-ubuntu-trusty-64:~# vi motd.pp
+root@vagrant-ubuntu-trusty-64:~# puppet apply motd.pp
+Warning: Could not retrieve fact fqdn
+Notice: Compiled catalog for vagrant-ubuntu-trusty-64 in environment production in 0.06 seconds
+^[[ANotice: /Stage[main]/Main/File[/tmp/motd]/content: content changed '{md5}938f8453c441ee3a71fb86ea3f6ca1e0' to '{md5}487578e461e1ca629e152117339ef1bd'
+Notice: Finished catalog run in 0.04 seconds
+root@vagrant-ubuntu-trusty-64:~# more /tmp/motd
+The text that i want to display in devops qedge class
+cat motd.pp
+$x ="The text that i want to display"
+file {'/tmp/motd':
+ensure => present,
+#content => "This is the message of the Qedge"
+content =>"$x in devops qedge class"
+}
+
+
+
+
+
+ cat motd.pp
+$x ="The text that i want to display"
+file {'/tmp/motd':
+ensure => present,
+#content => "This is the message of the Qedge"
+#content =>"$x in devops qedge class"
+content => "Welcome to ${hostname},\na ${operatingsystem} machine "
+}
+
+more /tmp/motd
+
+
+
+How to install git in ubuntu?
+
+apt-get install git
+
+instead
+
+more exampleclass.pp
+class git {
+package {"git" :ensure =>present }
+}
+include git
+
+
+to check git
+
+sample class examples?
+
+1.How to install a Git?
+
+class git {
+
+package {"git": ensure => present }
+
+}
+
+include git
+
+git
+
+how to remove git from your box?
+
+sudo apt-get purge git; sudo apt-get autoremove; sudo apt-get install git
+
+
+class lamp {
+exec {"/usr/bin/apt-get update": }
+->
+package {"apache2": ensure => present }
+->
+package {"mysql-server": ensure => present }
+->
+package {"php5": ensure => present }
+->
+service {"apache2": ensure => running }
+->
+service {"mysql": ensure => running }
+->
+file { '/var/www/html/info.php': content => '<?php phpinfo(); ?>' }
+}
+include lamp
+
+How to install links?
+
+apt-get install lynx
+
+apt-get remove apache2
+
+case $operatingsystem { 
+centos: { $apache = "httpd" } 
+redhat: { $apache = "httpd" } 
+debian: { $apache = "apache2" } 
+ubuntu: { $apache = "apache2" } 
+default: { fail("Unrecognized operating system for webserver") } 
+} 
+package {"apache2": ensure => present }
+
+apt-get purge apache2
+
+
+run one more time(if u have relation issue it is vagrant issue)
+
+case $operatingsystem { 
+centos, redhat: { $apache = "httpd" } 
+debian, ubuntu: { $apache = "apache2" } 
+default: { fail("Unrecognized operating system for webserver") } 
+}
+
+
+
+puppet module install dhoppe-ntp --version 1.3.1
+
+puppet module uninstall puppetlabs-ntp
+
+
+tomcat::install { '/opt/tomcat': 
+source_url => 'https://www-us.apache.org/dist/tomcat/tomcat-7/v7.0.x/bin/apache-tomcat-7.0.x.tar.gz', 
+} 
+tomcat::instance { 'default': 
+catalina_home => '/opt/tomcat', 
+}
+
+
+
+
+How to create manifest?
+
+
+
+modules are created under the etc/puppet/module directroy.
+
+
+move to etc/puppet/module
+
+cd etc/puppet/module
+
+mkdir git
+
+mkdir manifests
+
+cd etc/puppet/module/git/manifests
+
+init.pp
+copy the git code
+(don't use include)
+
+class git {
+package {"git" :ensure =>present }
+}
+include git
+
+
+go to home dirctory
+
+puppet apply --modulepath /etc/puppet/module -e 'class {"git":}'
+
+wget  wget https://s3.amazonaws.com/pe-builds/released/2016.5.2/puppet-enterprise-2016.5.2-ubuntu-14.04-amd64.tar.gz
+
+ tar -xvzf puppet*.tar.gz
+ 
+ 
+ cd puppet*
+ 
+ ls
+ 
+ ./puppet-enterprise-installer
+ 
+ press enter
+ 
+ vagrant-ubuntu-trusty-64

@@ -1,0 +1,23 @@
+How to install Ansible?
+
+sudo apt-get update
+
+sudo apt-get install software-properties-common
+
+sudo apt-add-repository ppa:ansible/ansible
+
+sudo apt-get update
+
+sudo apt-get install ansible
+
+
+How to create vault?
+
+mkdir ansible
+cd ansible
+vi test.yml
+
+ansible-vault encrypt test.yml
+ansible-vault encrypt test.yml
+
+ansible-vault view test.yml

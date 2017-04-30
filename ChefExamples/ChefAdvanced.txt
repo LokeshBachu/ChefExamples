@@ -1,0 +1,8 @@
+How to Create cookbook?
+
+create directory in your repo..
+
+mkdir cookbook
+
+
+chef generate cookbook cookbooks/learn_chef_apache2
