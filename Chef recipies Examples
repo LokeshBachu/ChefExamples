@@ -33,3 +33,5 @@ service 'tomcat7' do
   action :start
   
 end 
+
+chef-clinet --local-mode examplerecipie.rb
