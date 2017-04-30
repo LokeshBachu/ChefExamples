@@ -1,0 +1,35 @@
+Generally Resource tells what to do but not the how to do ?
+
+mkdir reciepies
+
+Generally reciepie is the collection of thye resources ..
+
+vi examplerecipie.rb
+
+execute 'update' do 
+ command 'sudo apt-get update'
+
+end
+
+file '/tmp/example' do 
+
+   content 'hello chief'
+
+end
+
+package 'elinks' do 
+
+  action :install 
+  
+end
+
+package 'tomcat7' do 
+
+  action :install
+end
+
+service 'tomcat7' do 
+
+  action :start
+  
+end 
