@@ -35,3 +35,5 @@ service 'tomcat7' do
 end 
 
 chef-clinet --local-mode examplerecipie.rb
+
+service tomcat7 status.
