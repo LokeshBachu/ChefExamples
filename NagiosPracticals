@@ -1,0 +1,225 @@
+nagios:
+
+Vagrant file changes needed for nagios:
+How to add hostname from vagrantfile?
+
+Ans:It is purely depends on vagrantapi: 
+For Vagrant API v1 use config.vm.host_name.
+For Vagrant API v2 use config.vm.hostname.
+
+we should add these after box 
+EX:Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.hostname = "vhost1.local"
+  #config.vm.network "private_network", ip: "192.168.50.4"
+end
+
+Any monotoring tool please use 
+
+config.vm.network "public_network" it should be enabled .we need to use bridge.
+
+hostnamectl set-hostname nagiosserver
+
+In nagios Server:
+apt-get update
+apt-get install nagios3
+
+
+Follow the GUI instructions.
+
+http://192.168.1.8/ (use your ip)
+
+http://192.168.1.8/nagios3/ we can see the main page of nagios.
+
+cd /etc/nagios is the main installation direcory.
+
+cd /etc/nagios3 for nagios main folders
+
+cd /etc/nagios-plugin for plugin folder.
+
+/etc/nagios3/conf.d is the mail folder where localhost_nagios2.cfg is the configuration file.
+
+
+In nagios agents:
+
+nRPE need to be installed.It is stands for nagios remote process execution.
+
+
+apt-get update
+
+apt-get install nagios-plugins nagios-nrpe-server nagios-nrpe-plugin
+
+Follow the GUI instructions.
+
+vi /etc/nagios/nrpe_local.cfg
+
+add the below code
+allowed_hosts=192.168.1.8
+command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,1,5 -c 30,25,20
+command[check_all_disks]=/usr/lib/nagios/plugins/check_disk -w 10 -c 2
+command[check_apt]=/usr/lib/nagios/plugins/check_apt
+
+sudo service nagios-nrpe-server restart
+
+sudo service nagios-nrpe-server status
+
+then go to nagios server
+sudo apt-get install nagios-nrpe-plugin 
+cd /etc/nagios3/nagios/conf.d
+vi remote-linuxhost.cfg
+ls /usr/lib/nagios/plugins/ (for plugins)
+
+vi remote-linuxhost.cfg
+
+vi nrpelinuxhost.cfg
+
+define host{
+use generic-host ; name of host template to use
+host_name ubuntu2
+alias ubuntu2
+address 192.168.1.5
+}
+
+# Define a command to monitor remote servers
+define command{
+command_name check_remote
+command_line /usr/lib/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+}
+
+# Define a service to check the load on the local machine.
+define service {
+use generic-service
+service_description Current Load
+check_command check_remote!check_load
+host_name ubuntu2
+}
+
+# Define a service to check the disk space of the root partition
+# on the local machin
+define service {
+use generic-service
+service_description Disk Space
+check_command check_remote!check_all_disks
+host_name ubuntu2
+}
+
+# Check for missing OS updates
+define service {
+use generic-service
+service_description OS Updates
+check_command check_remote!check_apt
+host_name ubuntu2
+}
+
+go to client and then check 
+
+vi /etc/nagios/nrpe_local.cfg
+
+go to server reload
+sudo service nagios3 reload
+
+Goto web interface and then check the Ui for hosts and services.
+
+so we have nrpeplugin which connets to the remote service by using nrpeservice
+from nagios server has nrpe clinet it coonects to the nrpe server of nagisclient and run the commands locaaly at client itself
+
+
+How to setup windows machine?
+
+nsclient.org dowloand one of the leagy pacakge
+
+win10:nSCP:0.4.3.77
+win7:nSCP:0.4.1.073
+
+use nSCP 0.4.3.073
+
+use 0.4.1.73
+https://github-production-release-asset-2e65be.s3.amazonaws.com/4165401/9c2e673e-9be9-11e5-8143-dc0e5da79798?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWnJYAX4CSVEH53A%2F20180304%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20180304T065654Z&X-Amz-Expires=300&X-Amz-Signature=0169bb4de4fb1cd06f32078a3ba5703aa72ee0f518984f0de9d0a2ec6548bae4&X-Amz-SignedHeaders=host&actor_id=25868658&response-content-disposition=attachment%3B%20filename%3DnSCP-0.4.1.073-x64.msi&response-content-type=application%2Foctet-stream
+
+select write config
+
+host as nagiosserver host :192.168.1.8
+
+uncheck nSCE option
+
+open inifile under programfiles and nsclient.ini
+line after allowed hosts.
+
+allowed hosts = 192.168.1.8
+
+password=
+ 
+port=12489
+
+windows+run services.msc
+find nsclient service restart it
+
+come back to nagios server from consolez or putty
+ cd /etc/nagios3/conf.d/  create file windows.cfg
+ 
+go to cmd of win machine ipconfig192.168.1.2
+
+vi windows.cfg
+
+define host{
+	use		          generic-host
+	host_name 	     remote-windows-host
+	alias           Remote Windows Host
+	address       	192.168.1.2
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     nSClient++ Version
+	check_command           check_nt!CLIEnTVERSIOn
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     Uptime
+	check_command           check_nt!UPTIME
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     CPU Load
+	check_command           check_nt!CPULOAD!-l 5,80,90
+}
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     Memory Usage
+	check_command           check_nt!MEMUSE!-w 80 -c 90
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     C:\ Drive Space
+	check_command           check_nt!USEDDISKSPACE!-l C -w 80 -c 90
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     D:\ Drive Space
+	check_command           check_nt!USEDDISKSPACE!-l d -w 90 -c 95
+}
+
+
+define service{
+	use			generic-service
+	host_name		remote-windows-host
+	service_description	W3SVC
+	check_command		check_nt!SERVICESTATE!-d SHOWALL -l W3SVC
+}
+
+define service{
+	use                     generic-service
+	host_name               remote-windows-host
+	service_description     Explorer
+	check_command           check_nt!PROCSTATE!-d SHOWALL -l explorer.exe
+} 
